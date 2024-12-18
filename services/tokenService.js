@@ -8,36 +8,24 @@ const initialzeSecret = async (req, res) => {
   try {
     const secret = crypto.randomBytes(64).toString('hex'); // สุ่ม JWT Secret
     let envContent = '';
-    
-    // อ่านไฟล์ .env ถ้ามีอยู่
     if (fs.existsSync('.env')) {
       envContent = fs.readFileSync('.env', 'utf8');
     }
-
-    // แยกบรรทัดออกมา
     let lines = envContent.split('\n');
     let foundSecret = false;
-
-    // ตรวจสอบและอัปเดตเฉพาะ SECRET
     lines = lines.map(line => {
       if (line.startsWith('SECRET=')) {
         foundSecret = true;
-        return `SECRET=${secret}`; // แทนที่ค่า SECRET เดิม
+        return `SECRET=${secret}`; 
       }
-      return line; // ไม่เปลี่ยนแปลงบรรทัดอื่น
+      return line;
     });
 
-    // ถ้าไม่มี SECRET อยู่ในไฟล์ ให้เพิ่มใหม่
     if (!foundSecret) {
       lines.push(`SECRET=${secret}`);
     }
-
-    // รวมเนื้อหาไฟล์กลับ
     envContent = lines.join('\n');
-
-    // เขียนกลับไปที่ไฟล์
     fs.writeFileSync('.env', envContent, 'utf8');
-    console.log("Secret was created");
   } catch (err) {
     console.log("Error:", err);
   }
@@ -66,13 +54,12 @@ const secretWork = async (req,res) =>{
     timezone: "Asia/Bangkok" // กำหนดให้ทำงานตามโซนเวลาไทย
 })
 }
-
 /**** middleware verfiy header acess token *****/
 const verifyToken = jwt({
   secret: process.env.SECRET,
   algorithms: ["HS256"], 
   userProperty: "auth", 
-});//send user collect in req.auth
+});
 
 const handleTokenError = (err, res, next) => {
   if (err) {
