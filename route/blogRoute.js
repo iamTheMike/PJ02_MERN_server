@@ -6,9 +6,9 @@ const { verifyToken, handleTokenError } = require('../services/tokenService');
 const router = express.Router();
 
 
-router.get('/blogs',getAllblogs)
-router.get('/blog/:slug',getBlog)
-router.put('/blog/:slug',(req,res,next)=>{
+router.get('/all',getAllblogs)
+router.get('/:slug',getBlog)
+router.put('/:slug',(req,res,next)=>{
     verifyToken(req,res,err=>{
         if(err){
             return  handleTokenError(err,res,next)
@@ -24,7 +24,7 @@ router.post('/create',(req,res,next)=>{
         next();
         })
     },create)
-router.delete('/blog/:slug',(req,res,next)=>{
+router.delete('/:slug',(req,res,next)=>{
     verifyToken(req,res,err=>{
         if(err){
           return  handleTokenError(err,res,next)

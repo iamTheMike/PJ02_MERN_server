@@ -24,7 +24,6 @@ exports.create= async (req,res)=>{
 }
 
 exports.getAllblogs= async (req,res)=>{
-   console.log("ssss");
    try{
      const userData = await getAllUser() ;
      const blogData = await blogModel.find();
@@ -32,13 +31,11 @@ exports.getAllblogs= async (req,res)=>{
        const user = userData.find(user=>  blog.userEmail===user.email)
        const newBlog =  {...blog._doc,userName:(user?(user.userName):null)}
        return{
-        ...newBlog
-         
+        ...newBlog  
        }
      })
      res.json(userBlog);
-   }catch(err){
-      console.log(err)
+   }catch(error){
      res.status(500).json({message:"Failed to fetch blogs"});
    }
 }

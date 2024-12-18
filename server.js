@@ -25,16 +25,9 @@ app.use(express.json());
 app.use(cors(corsOptions));
 app.use(morgan("dev")); // display log "dev" mode
 
+app.use('/blog/api',blogRoute);
+app.use('/auth/api',authRoute);
 
-//route
-
-app.use('/api',blogRoute);
-app.use('/api',authRoute);
-
-
-
-
-  
 const port = process.env.PORT || 5000 ;
 app.listen( port, async ()=>{
     console.log(`start server on port ${port}`);

@@ -387,7 +387,7 @@ exports.getAllUser = async (req,res) =>{
         const [fetchData] = await db.execute('SELECT email, userName FROM users')
         return fetchData;
     }catch(error){
-       return null
+        throw new error("Server Error");
     }
 }
 
