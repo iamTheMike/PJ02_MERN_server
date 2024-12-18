@@ -19,7 +19,7 @@ router.get('/getUser',(req,res,next)=>{
           }
           next();
         })
-    },getUserBytoken);
+},getUserBytoken);
 router.post('/login',login)
 router.post('/otp',(req,res,next) =>{
     upload.single('userImage')(req,res,(err)=>{
@@ -38,7 +38,7 @@ router.post('/signup',(req,res,next)=>{
          }
          next();
         })
-    },signup);
+},signup);
     
 router.post('/otp',(req,res,next) =>{
     upload.single('userImage')(req,res,(err)=>{
@@ -63,8 +63,7 @@ router.post('/creat-profile',(req,res,next)=>{
              }
              next();
             })
-    },creatAndUpdateProfile
-);
+},creatAndUpdateProfile);
 
 
 

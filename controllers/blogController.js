@@ -17,9 +17,9 @@ exports.create= async (req,res)=>{
     }
    try{
     const blog = await blogModel.create({title,content,userEmail,slug});
-    return res.status(201).json(blog); 
+    return res.status(200).json({message:"create blog sucessfully ",blog}); 
    }catch(err){
-    res.status(400).json({message:"Cannot duplicate title"})
+      return res.status(400).json({message:"Cannot duplicate title"})
    }
 }
 
@@ -36,7 +36,7 @@ exports.getAllblogs= async (req,res)=>{
      })
      res.json(userBlog);
    }catch(error){
-     res.status(500).json({message:"Failed to fetch blogs"});
+     res.status(500).json({message:"Failed to fetch blog"});
    }
 }
 
@@ -74,10 +74,10 @@ exports.editBlog = async (req,res)=>{
       try{
          const data = await blogModel.findOne({slug});
          if(data===null){
-            return res.status(400).json({message:"Not Found Blog"})
+            return res.status(400).json({message:"Blog not found"})
          };
       }catch(err){
-         res.json({message:"Update sucessfully"});
+         return res.status(500).json({message:"Cannot fetch blog"});
       }
       const {title,content,author} = req.body
       let newslug = slugify(title); //ถ้า title เป็นภาษาไทย slug จะเป็นค่าว่าง
@@ -86,10 +86,10 @@ exports.editBlog = async (req,res)=>{
       if (!result) {
          return res.status(404).json({ message: "Cannot update" });
       }
-      res.json({message:"Update sucessfully"});
+      return  res.json({message:"Update sucessfully"});
    }catch(error){
       console.error("Error during deletion:", error);
-     res.status(500).json({message:"Failed to update the blog"});
+      return  res.status(500).json({message:"Failed to update the blog"});
    }
 }
 //
