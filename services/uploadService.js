@@ -14,18 +14,15 @@ const fileFilter = (file) => {
 }
 const handleMulterError = (err, res, next) => {
     if (err instanceof multer.MulterError) {
-        // ตรวจสอบข้อผิดพลาดจาก multer
         if (err.code === 'LIMIT_FILE_SIZE') {
             return res.status(400).json({ message: 'File size exceeds the limit of 4MB!' });
         }
         return console.log(err)
         res.status(400).json({ message: err.message });
     } else if (err) {
-        // กรณีข้อผิดพลาดอื่นๆ
-        console.log(err)
         return res.status(400).json({ message: err.message });
     }
-    next(); // ไม่มีข้อผิดพลาด ให้ดำเนินการต่อ
+    next(); 
 };
 
 const upload = multer({
