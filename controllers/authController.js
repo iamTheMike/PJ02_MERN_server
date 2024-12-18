@@ -12,7 +12,12 @@ exports.login = async(req,res) =>{
     const {userEmail,password} = req.body;
     const db = await connectDatabase();
     if (!userEmail || !password) {
-        return res.status(400).json({ message: 'Email and password are required' });
+        return res.status(400).json({ message: 'Require Email and password' });
+    }
+    if(!validator.isEmail(userEmail)){
+        if(!userEmail==='admin'){
+        return res.status(401).json({ message: 'Invalid Password or email' });
+        }
     }
     try{
         if (!db) {
@@ -37,15 +42,13 @@ exports.login = async(req,res) =>{
             return res.status(200).json({message:"Admin welcome",token,role});
         }
         //email check
-        if(!validator.isEmail(email)){
-            return res.status(400).send('Email not found');
-        }
+        
         // create otp
         let otp = generateOTP(email);
          await sendOTPviaEmail(email,otp);
         return res.status(200).json({message: "Pls verify otp"});
     }catch(error){
-        return res.status(500).json({message:'Login server error'})
+        return res.status(500).json({message:'Database not initialized'})
     }finally{
          await db.end();
     }
@@ -76,14 +79,13 @@ exports.googleLogin = async (req, res) => {
                         'GoogleOauth'
                     ])
                 }catch(error){
-                    return res.status(400).json({message:"Error insert users"})
+                    return res.status(500).json({message:"Error record new user"})
                 }
         }
-                const [userData] = await db.execute(`SELECT * FROM users WHERE email = ?`,[email])
-                const user = userData[0]
-                const {userName,role,userImage} = user;
-                const token = await creatToken({userName,email,role,userImage})
-    
+        const [userData] = await db.execute(`SELECT * FROM users WHERE email = ?`,[email])
+        const user = userData[0]
+        const {userName,role,userImage} = user;
+        const token = await creatToken({userName,email,role,userImage})
         return res.status(200).json({message:"login sucessfully",token})
     }catch (error) {
         return res.status(500).send('An error occurred during Google login');
@@ -103,8 +105,8 @@ exports.otpVerify = async(req,res) =>{
     return res.status(500).json({ message: 'Database not initialized' });
    }
    try{
-       const [Data]  = await db.execute('SELECT * FROM users where email = ?',[userEmail])  
-        if (Data.length === 0) {
+      const [Data]  = await db.execute('SELECT * FROM users where email = ?',[userEmail])  
+       if (Data.length === 0) {
             if(req.file){
                     try{
                         const imageUrl = await uploadImage(req.file)
@@ -120,11 +122,22 @@ exports.otpVerify = async(req,res) =>{
                                 imageUrl,
                                 "Local"
                             ])
+
                             }catch(error){
                                     return res.status(400).json({message:"Canot sign up new user"})   
                             } 
+                    }catch(error){
+                            return res.status(500).json({message:'cannot connect Google Cloud to upload user avarta'})
+                    }
+                        try{
+                            const [fetchData]  = await db.execute('SELECT * FROM users where email = ?',[userEmail]) 
+                            const userData = fetchData[0];
+                            const { userName, email, role, userImage } = userData;
+                            //create access token 
+                            const token = await creatToken({userName,email,role,userImage})
+                            return res.status(200).json({message:"Signup sucessfully",token})
                         }catch(error){
-                            return res.status(500).json({message:'cannot connect Google Cloud to fetch user avarta'})
+                            return res.status(400).json({message:'Signup otp error'})
                         }
             }else{
                 try{
@@ -142,7 +155,18 @@ exports.otpVerify = async(req,res) =>{
                     console.log(error);
                     return res.status(400).json({message:"Canot sign up new user"})   
                 } 
+                try{
+                    const [fetchData]  = await db.execute('SELECT * FROM users where email = ?',[userEmail]) 
+                    const userData = fetchData[0];
+                    const { userName, email, role, userImage } = userData;
+                    //create access token 
+                    const token = await creatToken({userName,email,role,userImage})
+                    return res.status(200).json({message:"Signup sucessfully",token})
+                }catch(error){
+                    return res.status(500).json({message:'OTP signup error'})
+                }
             }
+            
         }else{
             try{
                 const [fetchData]  = await db.execute('SELECT * FROM users where email = ?',[userEmail]) 
@@ -152,11 +176,11 @@ exports.otpVerify = async(req,res) =>{
                 const token = await creatToken({userName,email,role,userImage})
                 return res.status(200).json({message:"login sucessfully",token})
             }catch(error){
-                return res.status(500).json({message:'Login otp error'})
+                return res.status(400).json({message:'otp invalid'})
             }
         }
     }catch(error){
-        return res.status(400).json({message:"cannot fetchData"})
+        return res.status(500).json({message:"Database not initialized"})
     }finally{
         await db.end();
     }
@@ -200,13 +224,21 @@ exports.signup = async (req,res) =>{
                 return res.status(401).json({ message: 'This Email have been used' });
             }
         }catch(error){
-             return res.status(401).json({ message: 'Cannot FetchData' })
+            return res.status(500).json({message:'Database not initialized'})
+        }
+        try{
+            const [fetchData] = await db.execute (`SELECT * FROM users where userName = ?`,[userName]) 
+            if (fetchData.length !== 0) {
+                return res.status(401).json({ message: 'This Username have been used' });
+            }
+        }catch(error){
+            return res.status(500).json({message:'Database not initialized'})
         }
         let otp = generateOTP(userEmail);
         await sendOTPviaEmail(userEmail,otp);
-        return res.status(200).json({message: "Pls verify otp"});
+        return res.status(200).json({message: "OTP was send to your Email, Please Verify OTP"});
     }catch(error){
-        return res.status(500).json({message:''})
+        return res.status(500).json({message:'Database not initialized'})
     }finally{
         await db.end();
     }
@@ -218,7 +250,7 @@ exports.getProfile = async(req,res) =>{
     try{
         const [fetchUser] = await db.execute(`SELECT id,userName,userImage FROM users WHERE userName = ?`,[username])
         if(fetchUser.length===0){
-            return res.status(400).json({message:"User not found"})
+            return res.status(404).json({message:"user not found"})
         }
         const user = fetchUser[0];
         const {id,userName,userImage} = user;
@@ -229,7 +261,7 @@ exports.getProfile = async(req,res) =>{
                 INNER JOIN userData ON users.id = userData.userid
                 WHERE users.id = ?`,[id])
             if(fetchuserData.length===0){
-               return res.status(200).json({message:"userData not found",id,userName,userImage})
+               return res.status(200).json({message:"user have not created the profile",id,userName,userImage})
             }
             const userData = fetchuserData[0];
             const {firstName,lastName,birthDate,address,bio} = userData
@@ -249,6 +281,10 @@ exports.creatAndUpdateProfile = async(req,res)=>{
     let userImage;
     const db = await connectDatabase();
         try{
+            const [checkUser] = await db.execute('SELECT userName FROM users ');
+            if (checkUser[0].userName === userName){
+                return res.status(400).json({message:"username have been used already"})
+            }
              if (userName || req.file) {
                try{ 
                     if(req.file){
@@ -288,12 +324,12 @@ exports.creatAndUpdateProfile = async(req,res)=>{
                                             
                                                 const [fetchData] = await db.execute('SELECT * FROM userData WHERE userid = ?',[userid] )
                                                 const userData = fetchData[0];
-                                                return res.status(200).json({userData,token})
+                                                return res.status(200).json({message:"Record data successfully",userData,token})
                                             }catch(error){
-                                                return res.status(400).json({message:"User Data Not Found"})
+                                                return res.status(400).json({message:"userData not found"})
                                             }    
                                         }catch(error){
-                                            return res.status(400).json({message:"There is no user data"})
+                                            return res.status(400).json({message:"Record user data error"})
                                         } 
                                     }else{
                                         try{
@@ -316,17 +352,19 @@ exports.creatAndUpdateProfile = async(req,res)=>{
                                                 return res.status(400).json({message:"User Data Not Found"})
                                             }    
                                         }catch(error){
-                                            res.status(400).json({message:"cannot update UserData"})
+                                            res.status(400).json({message:"Record user data error"})
                                         }   
                                     } 
                                 }catch(error){
+                                    return res.status(400).json({message:"cannot fetch userData"})
                                 }
                             }catch(error){       
                             }    
                         }catch(error){
-                            return res.status(400).json({message:"The name already exists in the system"})
+                            return res.status(400).json({message:"cannot update Username and image "})
                         }
                 }catch(error){
+                    return res.status(400).json({message:"cannot upload Image"})
                 }   
              }else{
                 try{
@@ -368,16 +406,17 @@ exports.creatAndUpdateProfile = async(req,res)=>{
                                 return res.status(400).json({message:"User Data Not Found"})
                             }    
                         }catch(error){
-                            res.status(400).json({message:"cannot update UserData"})
+                            res.status(400).json({message:"Update UserData error"})
                         }   
                     } 
                 }catch(error){
-                    res.status(400).json({message:"cannot update checkData"})
+                    res.status(400).json({message:"cannot fetch userData"})
                 }
-             }
-              
+             }    
         }catch(error){
-            res.status(400).json({message:"Erro Top domain"})
+            res.status(400).json({message:"Database not initialized"})
+        }finally{
+            await db.end();
         }       
 }       
 

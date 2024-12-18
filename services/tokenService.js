@@ -6,7 +6,7 @@ const { expressjwt: jwt } = require('express-jwt');
 
 const initialzeSecret = async (req, res) => {
   try {
-    const secret = crypto.randomBytes(64).toString('hex'); // สุ่ม JWT Secret
+    const secret = crypto.randomBytes(64).toString('hex'); 
     let envContent = '';
     if (fs.existsSync('.env')) {
       envContent = fs.readFileSync('.env', 'utf8');
@@ -26,8 +26,8 @@ const initialzeSecret = async (req, res) => {
     }
     envContent = lines.join('\n');
     fs.writeFileSync('.env', envContent, 'utf8');
-  } catch (err) {
-    console.log("Error:", err);
+  } catch (error) {
+    throw new Error('generate secret error');
   }
 };
 
@@ -51,10 +51,10 @@ const secretWork = async (req,res) =>{
     initialzeSecret();
   console.log('SECRET regenerated at midnight.'); //UTC Zone
  },{
-    timezone: "Asia/Bangkok" // กำหนดให้ทำงานตามโซนเวลาไทย
+    timezone: "Asia/Bangkok" 
 })
 }
-/**** middleware verfiy header acess token *****/
+
 const verifyToken = jwt({
   secret: process.env.SECRET,
   algorithms: ["HS256"], 
@@ -63,12 +63,11 @@ const verifyToken = jwt({
 
 const handleTokenError = (err, res, next) => {
   if (err) {
-    // ตรวจสอบว่ามีข้อผิดพลาดจริงๆ ก่อนที่จะเข้าถึง `err.name`
     if (err.name === 'UnauthorizedError') {
       return res.status(401).json({ message: 'Please Login' });
     }
   }
-  next(); // ไม่มีข้อผิดพลาด ให้ดำเนินการต่อ
+  next(); 
 };
 
 module.exports = {secretWork,initialzeSecret,creatToken,verifyToken,handleTokenError};

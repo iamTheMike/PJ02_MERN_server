@@ -33,7 +33,7 @@ const getUserGoogle = async (code,req,res) => {
     const googleData = await userInfoResponse.json();
     return googleData;
   }catch(err){
-    return null;
+    throw new Error('Cannot get user Data');
   }
   
 }

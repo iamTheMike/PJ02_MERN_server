@@ -11,8 +11,8 @@ const bucket = storage.bucket('mearn-app-01');
 const uploadImage = async (file) => {
     try {
         const { originalname, buffer, mimetype } = file;
-        const timestamp = Date.now(); // Ensure a timestamp is available
-        const blob = bucket.file(timestamp+originalname.replace(/ /g, "_") ); // Replace spaces with underscores in the filename
+        const timestamp = Date.now(); 
+        const blob = bucket.file(timestamp+originalname.replace(/ /g, "_") ); 
         const blobStream = blob.createWriteStream({
             metadata: {
                 contentType: mimetype,
@@ -20,16 +20,16 @@ const uploadImage = async (file) => {
         });
         return new Promise((resolve, reject) => {
             blobStream.on('error', (err) => {
-                reject(err); // Reject the promise if there is an error
+                reject(err); 
             });
             blobStream.on('finish', () => {
                 const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
-                resolve(publicUrl); // Resolve the promise with the URL once upload finishes
+                resolve(publicUrl);
             });
             blobStream.end(buffer);
         });
     } catch (error) {
-        throw error; // Propagate the error to be handled outside
+        throw new Error('Cannot Upload Image');; 
     }
 };
 

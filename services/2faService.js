@@ -59,7 +59,7 @@ const sendOTPviaEmail = async (email,otp)=>{
     try{
          await emailService.sendMail(emailOTP) 
     }catch(error){
-   console.log('error sendEail Module') 
+        throw new Error('Send OTP Error');
     }
 }
 
