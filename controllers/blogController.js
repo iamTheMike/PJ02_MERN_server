@@ -17,7 +17,7 @@ exports.create= async (req,res)=>{
     }
    try{
     const blog = await blogModel.create({title,content,userEmail,slug});
-    return res.status(200).json({message:"create blog sucessfully ",blog}); 
+    return res.status(201).json({message:"create blog sucessfully ",blog}); 
    }catch(err){
       return res.status(400).json({message:"Cannot duplicate title"})
    }

@@ -15,7 +15,7 @@ router.put('/:slug',(req,res,next)=>{
         }
         next();
         })
-    },editBlog)
+},editBlog)
 router.post('/create',(req,res,next)=>{
     verifyToken(req,res,(err)=>{
         if(err){
@@ -23,7 +23,7 @@ router.post('/create',(req,res,next)=>{
         }
         next();
         })
-    },create)
+},create)
 router.delete('/:slug',(req,res,next)=>{
     verifyToken(req,res,err=>{
         if(err){
@@ -31,7 +31,7 @@ router.delete('/:slug',(req,res,next)=>{
         }
         next();
         })
-    },removeBlog)
+},removeBlog)
 
    
 
