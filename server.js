@@ -25,8 +25,8 @@ app.use(express.json());
 app.use(cors(corsOptions));
 app.use(morgan("dev")); // display log "dev" mode
 
-app.use('/blog/api',blogRoute);
-app.use('/auth/api',authRoute);
+app.use('/api/blog',blogRoute);
+app.use('/api/auth',authRoute);
 
 const port = process.env.PORT || 5000 ;
 app.listen( port, async ()=>{
