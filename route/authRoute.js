@@ -8,6 +8,29 @@ const { verifyToken, handleTokenError } = require('../services/tokenService');
 const router = express.Router();
 
 
+
+
+router.get('/profile/:username',getProfile);
+router.get('/googlelogin',getUrlGoogleLogin); 
+router.get('/getUser',(req,res,next)=>{
+    verifyToken(req,res,err=>{
+        if(err){
+            return  handleTokenError(err,res,next)
+          }
+          next();
+        })
+    },getUserBytoken);
+router.post('/login',login)
+router.post('/otp',(req,res,next) =>{
+    upload.single('userImage')(req,res,(err)=>{
+        if(err){
+           return handleMulterError(err,res,next)
+        }
+        next();
+        })
+},otpVerify);
+router.post('/reotp',resendOTP); 
+router.post('/callback',googleLogin); 
 router.post('/signup',(req,res,next)=>{
     upload.single('userImage')(req,res,(err)=>{
         if(err){
@@ -17,16 +40,11 @@ router.post('/signup',(req,res,next)=>{
         })
     },signup);
     
-router.post('/login',login)
-router.get('/profile/:username',getProfile);
-router.post('/googlelogin',getUrlGoogleLogin); 
-router.post('/callback',googleLogin); 
 router.post('/otp',(req,res,next) =>{
     upload.single('userImage')(req,res,(err)=>{
         if(err){
            return handleMulterError(err,res,next)
         }
-        console.log("file upload",req.file);
         next();
         })
 },otpVerify);
@@ -47,16 +65,6 @@ router.post('/creat-profile',(req,res,next)=>{
             })
     },creatAndUpdateProfile
 );
-
-
-router.get('/getUser',(req,res,next)=>{
-    verifyToken(req,res,err=>{
-        if(err){
-            return  handleTokenError(err,res,next)
-          }
-          next();
-        })
-    },getUserBytoken);
 
 
 
