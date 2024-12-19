@@ -39,16 +39,6 @@ router.post('/signup',(req,res,next)=>{
          next();
         })
 },signup);
-    
-router.post('/otp',(req,res,next) =>{
-    upload.single('userImage')(req,res,(err)=>{
-        if(err){
-           return handleMulterError(err,res,next)
-        }
-        next();
-        })
-},otpVerify);
-router.post('/reotp',resendOTP);
 router.post('/creat-profile',(req,res,next)=>{
     verifyToken(req,res,err=>{
         if(err){

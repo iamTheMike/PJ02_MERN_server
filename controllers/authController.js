@@ -40,9 +40,9 @@ exports.login = async(req,res) =>{
         }
         let otp = generateOTP(email);
         await sendOTPviaEmail(email,otp);
-        return res.status(200).json({message: "Pls verify otp"});
+        return res.status(202).json({message: "OTP was send, Please verify OTP  "});
     }catch(error){
-        return res.status(500).json({message:'Database not initialized'})
+        return res.status(500).json({message:'internal server error'})
     }finally{
          await db.end();
     }
@@ -90,13 +90,14 @@ exports.googleLogin = async (req, res) => {
 
 exports.otpVerify = async(req,res) =>{
    const {otp,userName,userEmail,password} = req.body;
+   console.log(req.body);
    const db = await connectDatabase();
    let validateOTP = verifyOTP(userEmail,otp)
    if(!validateOTP){
     return res.status(401).json({message:'Invalid OTP'})
    }
    if(!db) {
-    return res.status(500).json({ message: 'Database not initialized' });
+    return res.status(500).json({ message: 'Internal Server Error'});
    }
    try{
       const [Data]  = await db.execute('SELECT * FROM users where email = ?',[userEmail])  
@@ -117,10 +118,10 @@ exports.otpVerify = async(req,res) =>{
                                 "Local"
                             ])
                             }catch(error){
-                                 return res.status(400).json({message:"Canot sign up new user"})   
+                                 return res.status(500).json({message:"internal server error"})   
                             } 
                     }catch(error){
-                        return res.status(500).json({message:'cannot connect Google Cloud to upload user avarta'})
+                        return res.status(500).json({message:'internal server error'})
                     }
                     try{
                         const [fetchData]  = await db.execute('SELECT * FROM users where email = ?',[userEmail]) 
@@ -129,7 +130,7 @@ exports.otpVerify = async(req,res) =>{
                         const token = await creatToken({userName,email,role,userImage})
                         return res.status(200).json({message:"Signup sucessfully",token})
                     }catch(error){
-                        return res.status(400).json({message:'Signup otp error'})
+                        return res.status(500).json({message:'internal server error'})
                     }
             }else{
                 try{
@@ -145,7 +146,7 @@ exports.otpVerify = async(req,res) =>{
                     ])
                 }catch(error){
                     console.log(error);
-                    return res.status(400).json({message:"Canot sign up new user"})   
+                    return res.status(500).json({message:"internal server error"})   
                 } 
                 try{
                     const [fetchData]  = await db.execute('SELECT * FROM users where email = ?',[userEmail]) 
@@ -155,7 +156,7 @@ exports.otpVerify = async(req,res) =>{
                     const token = await creatToken({userName,email,role,userImage})
                     return res.status(200).json({message:"Signup sucessfully",token})
                 }catch(error){
-                    return res.status(500).json({message:'OTP signup error'})
+                    return res.status(500).json({message:'internal server error'})
                 }
             }
             
@@ -166,13 +167,13 @@ exports.otpVerify = async(req,res) =>{
                 const { userName, email, role, userImage } = userData;
                 //create access token 
                 const token = await creatToken({userName,email,role,userImage})
-                return res.status(200).json({message:"login sucessfully",token})
+                return res.status(200).json({message:"Successful login",token})
             }catch(error){
-                return res.status(400).json({message:'otp invalid'})
+                return res.status(500).json({message:"Internal Server Error"})
             }
         }
     }catch(error){
-        return res.status(500).json({message:"Database not initialized"})
+        return res.status(500).json({message:"Internal Server Error"})
     }finally{
         await db.end();
     }
@@ -188,7 +189,7 @@ exports.resendOTP = async(req,res) => {
         await sendOTPviaEmail(userEmail,otp);
         return res.status(200).json({message: "New otp was created"});
     }catch(error){
-        return res.status(400).json({message: "Cannot creat new OTP"});
+        return res.status(500).json({message: "Cannot creat new OTP"});
     }
 }
 
@@ -197,40 +198,40 @@ exports.signup = async (req,res) =>{
     const userImage = req.file;
     const checkFile = fileFilter (userImage);
     if(!checkFile){
-        return res.status(401).json({message:'User Avatar cannot upload'})
+        return res.status(405).json({message:'User Avatar cannot upload'})
     }
     if (!userEmail || !password || !userName ) {
-        return res.status(400).json({ message: 'Email and password are required' });
+        return res.status(400).json({ message: 'Require Email, Password and Username' });
     }
     if(!validator.isEmail(userEmail)){
-        return res.status(400).send('This email cannnot use');
+        return res.status(400).send('Invalid email format');
     }
     const db = await connectDatabase();
     try{
         if (!db){
-            return res.status(500).json({ message: 'Database not initialized' });
+            return res.status(500).json({ message: 'internal server error' });
         }
         try{
-            const [fetchData] = await db.execute (`SELECT * FROM users where email = ?`,[userEmail]) 
-            if (fetchData.length !== 0) {
-                return res.status(401).json({ message: 'This Email have been used' });
+            const [emailCheck] = await db.execute (`SELECT * FROM users where email = ?`,[userEmail]) 
+            if (emailCheck.length !== 0) {
+                return res.status(409).json({ message: 'This Email have been used' });
             }
         }catch(error){
-            return res.status(500).json({message:'Database not initialized'})
+            return res.status(500).json({message:'internal server error'})
         }
         try{
-            const [fetchData] = await db.execute (`SELECT * FROM users where userName = ?`,[userName]) 
-            if (fetchData.length !== 0) {
+            const [userCheck] = await db.execute (`SELECT * FROM users where userName = ?`,[userName]) 
+            if (userCheck.length !== 0) {
                 return res.status(401).json({ message: 'This Username have been used' });
             }
         }catch(error){
-            return res.status(500).json({message:'Database not initialized'})
+            return res.status(500).json({message:'internal server error'})
         }
         let otp = generateOTP(userEmail);
         await sendOTPviaEmail(userEmail,otp);
-        return res.status(200).json({message: "OTP was send to your Email, Please Verify OTP"});
+        return res.status(200).json({message: "OTP was send to your email, Please Verify OTP"});
     }catch(error){
-        return res.status(500).json({message:'Database not initialized'})
+        return res.status(500).json({message:'internal server error'})
     }finally{
         await db.end();
     }

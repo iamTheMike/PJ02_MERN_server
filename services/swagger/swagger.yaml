@@ -11,13 +11,24 @@ servers:
 tags:
   - name: Auth/User Profile
     description: Get User Profile
-  - name: Auth/User Data By Token
-    description: Get User By Token
+  - name: Auth/User Data By JWT
+    description: Get User By  JWT
   - name: Auth/Login 2FA
-    description: User Services
-  - name: Auth/Google Login
-    description: User Services
+    description: Log in to create a JWT for authentication.
+                 - If the user is an Admin, only 1FA (email and password verification) is required.
+                 - For other users, 2FA is required
+                   1. Verify email and password to generate an OTP sent to the user's email.
+                   2. Verify the OTP along with the email to create the JWT for authentication.
   - name: Auth/Sign up
+    description: Sign up a new user with automatic login
+                 1. Submit user data such as userEmail, userName, password, userImage(optional) to generate an OTP sent to the user's email.
+                 2. Verify the OTP along with the email to login automatically 
+  - name: Auth/Otp
+    desctiption: verrify OTP, There are two function
+                 1. verifty after Login using OTP and useremail
+                 2. verify after signup using OTP, useremail, username, password, and userImage(optional)
+
+  - name: Auth/Google Login
     description: User Services
   - name: Auth/Create Profile
     description: User Services
@@ -44,14 +55,34 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Profile'
-
+                 $ref: '#/components/schemas/Profile'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: object
+                    example: "user not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: object
+                    example: "internal server error"
+           
   /api/auth/getUser:
     get:
       tags:
-        - Auth/User Data By Token
+        - Auth/User Data By JWT
       summary: Get User Data for Logged-in User Using Provided Token
-      description:  Fetches the data of the logged-in user based on the provided Bearer token for authentication.
+      description:  Fetches the data of the logged-in user based on the provided Bearer token.
       security:
         - BearerAuth: []
       responses:
@@ -60,8 +91,338 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/getUser'                
- 
+                $ref: '#/components/schemas/UserData'  
+        '401':
+          description: Invalid or expired token
+          content:
+           application/json:
+            schema:
+              type: object
+              properties:
+                message: 
+                type: object
+                example: "Invalid or expired token"      
+
+# login 
+  /api/auth/login:
+    post:
+      tags:
+        - Auth/Login 2FA
+      summary: Step 1.Log in to create OTP.
+      description: Log in for authentication.
+                 - If the user is an Admin, only 1FA (email and password verification) is required.
+                 - For other users, 2FA is required
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userEmail:
+                  type: string
+                  example: "user@email.com"
+                password:
+                  type: string
+                  format: password
+                  example: "user1234"
+              required:
+                - userEmail
+                - password    
+      responses:
+        '200':
+          description: Successful login (Admin role)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Admin'  
+        '202':
+          description: OTP was send, Please verify OTP    
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: object
+                    example: "OTP was send, Please verify OTP "             
+        '400':
+          description: Require Email and Password
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: object  
+                    example: "Require Email amd Password"   
+        '401':
+          description: Invalid email or password
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: 
+                    type: object
+                    example: "Invalid email or password"   
+        '500':
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: object
+                    example: "internal server error"
+
+
+# signup 
+  /api/auth/signup:
+      post:
+        tags:
+          - Auth/Sign up
+        summary: Step 1.Submit user data to create OTP.
+        description: Submit user data such as userEmail, userName, password, userImage(optional) to generate an OTP sent to the user's email.
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userName:
+                    type: string
+                    example: "Themike"
+                  userEmail:
+                    type: string
+                    example: "user@email.com"
+                  password:
+                    type: string
+                    format: password
+                    example: "user1234"
+                  # optional
+                  userImage:
+                    type: buffer
+                    format: binary
+                    description: "Optional user image (upload image file)"
+                required:
+                  - userName   
+                  - userEmail
+                  - password 
+                  - userName   
+        responses:
+          '200':
+            description: Successful login (Admin role)
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: object
+                      example: "OTP was send to your email, Please verify OTP "              
+          '400':
+            description: Require Email, Password and Username
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: object  
+                      example: "Require Email, Password and Username"  
+          '401':
+            description: This email cannnot use
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: object  
+                      example: "Invalid email format"     
+          '405':
+            description: User Avatar cannot upload
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message: 
+                      type: object
+                      example: "User Avatar cannot upload"   
+          '409':
+            description: This email has already been used
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: object
+                      example: "This email has already been used"
+          '410':
+            description: This Username have been used
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: object
+                      example: "This Username have been used"  
+          '413':
+            description: File size exceeds the limit of 4MB!
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: object
+                      example: "This Username have been used"  
+        '500':
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: object
+                    example: "internal server error"
+
+# OTP 
+  /api/auth/otp:
+    post:
+      tags:
+        - Auth/Otp
+      summary: Step 2. Verify OTP after Login or Signup to create JWT.
+      description: Verify the OTP along with the email to create the JWT for authentication.
+      requestBody:
+        description: verrify OTP, There are two function
+                      1. verifty after Login using OTP and useremail
+                      2. verify after signup using OTP, useremail, username, password, and userImage(optional)
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  properties:
+                    otp:
+                      type: string
+                      example: "123456"
+                    userEmail:
+                      type: string 
+                      format: email 
+                      example: "user@email.com" 
+                  required:
+                    - otp
+                    - userEmail      
+                - type: object
+                  properties:
+                    otp:
+                      type: string
+                      example: "123456"
+                    userName:
+                      type: string
+                      example: "user"
+                    userEmail:
+                      type: string 
+                      format: email 
+                      example: "user@email.com"
+                    password:
+                      type: string
+                      format: password
+                      example: "user1234"
+                      # optional
+                    userImage:
+                      type: buffer
+                      format: binary
+                      description: "Optional user image (upload image file)"
+                  required:
+                    - otp
+                    - userName
+                    - userEmail
+                    - password  
+      responses:
+        '200':  
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User' 
+        '201':  
+          description: Signup sucessfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewUser'         
+        '401':
+          description: Invalid OTP
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Invalid OTP"                   
+        '500':
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: object
+                    example: "internal server error"      
+  /api/auth/reotp:
+      post:
+        tags:
+          - Auth/Otp
+        summary: Resend OTP if Otp invalid.
+        description: Resend OTP if Otp invalid.
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userEmail:
+                    type: string  
+                    example: "user@email.com"
+                require:
+                    - userEmail
+        responses:
+          '200':  
+            description: Successful login
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: object
+                      example: "New otp was created"  
+          '500':
+            description: internal server error
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: object
+                      example: "internal server error"           
+
+
+
 components:
   securitySchemes:
     BearerAuth:
@@ -98,7 +459,7 @@ components:
           type: string
           format: uri
           example: "https://example.com/images/johndoe.jpg"
-    UserProfile:
+    UserData:
       type: object
       properties:
         user:
@@ -116,3 +477,33 @@ components:
             userImage:
               type: string
               example: "https://example.com/images/johndoe.jpg"
+    Admin:
+      type: object
+      properties:
+        message:
+          type: string  
+          example: "Admin welcome"
+        token:
+          type: string
+          example: "eyJhbGciOiJIUzI1NJshUksjCI6IkpXVCJ9.eyJ1c2VyTmFtZSI6IkFkbWlubWlrZSKmsJusp1JFbWFpbCI6ImFkbWluIiwicm9sZSI6ImFkbWluIiwidXNlckltYWdlIjoiaHR0cHM6Ly9zdG9yYWdlLmdvb2dsZWFwaXMuY29tL21lYXJuLWFwcC0wMS8xNzM0MzUzOTQwODAwU19fNDQ0ODY5MC5qcGciLCJpYXQiOjE3MzQ2MTc1MDYsImV4cCI6MTczNDYyMTEwNn0.ONC38HUB9vk5vuC0gkd-d4M27nTfApSItVaOAmn8QKI"
+        role:
+          type: string
+          examole: "Admin"              
+    User:
+      type: object
+      properties:
+        message:
+          type: string  
+          example: "Successful login"
+        token:
+          type: string
+          example: "eyJhbGciOiJIUzI1NJshUksjCI6IkpXVCJ9.eyJ1c2VyTmFtZSI6IkFkbWlubWlrZSKmsJusp1JFbWFpbCI6ImFkbWluIiwicm9sZSI6ImFkbWluIiwidXNlckltYWdlIjoiaHR0cHM6Ly9zdG9yYWdlLmdvb2dsZWFwaXMuY29tL21lYXJuLWFwcC0wMS8xNzM0MzUzOTQwODAwU19fNDQ0ODY5MC5qcGciLCJpYXQiOjE3MzQ2MTc1MDYsImV4cCI6MTczNDYyMTEwNn0.ONC38HUB9vk5vuC0gkd-d4M27nTfApSItVaOAmn8QKI"
+    NewUser:
+      type: object
+      properties:
+        message:
+          type: string  
+          example: "Signup sucessfully"
+        token:
+          type: string
+          example: "eyJhbGciOiJIUzI1NJshUksjCI6IkpXVCJ9.eyJ1c2VyTmFtZSI6IkFkbWlubWlrZSKmsJusp1JFbWFpbCI6ImFkbWluIiwicm9sZSI6ImFkbWluIiwidXNlckltYWdlIjoiaHR0cHM6Ly9zdG9yYWdlLmdvb2dsZWFwaXMuY29tL21lYXJuLWFwcC0wMS8xNzM0MzUzOTQwODAwU19fNDQ0ODY5MC5qcGciLCJpYXQiOjE3MzQ2MTc1MDYsImV4cCI6MTczNDYyMTEwNn0.ONC38HUB9vk5vuC0gkd-d4M27nTfApSItVaOAmn8QKI"
