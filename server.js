@@ -7,6 +7,7 @@ const authRoute = require('./route/authRoute')
 const { secretWork} = require('./services/tokenService')
 const {initializeBlogDatabase} = require('./models/blogDatabaseModel')
 const {initializeAuthDatabase} = require('./models/authDatabaseModel');
+const { swaggerDocument, swaggerUi } = require('./services/swagger/swagger');
 
 
 const app = express();
@@ -27,6 +28,7 @@ app.use(morgan("dev")); // display log "dev" mode
 
 app.use('/api/blog',blogRoute);
 app.use('/api/auth',authRoute);
+app.use('/api-doc',swaggerUi.serve, swaggerUi.setup(swaggerDocument))
 
 const port = process.env.PORT || 5000 ;
 app.listen( port, async ()=>{

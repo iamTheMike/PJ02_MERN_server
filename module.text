@@ -1,0 +1,25 @@
+Package used
+server
+    -express
+    -mongoose
+    -mysql2
+    -jsonwebtoken
+    -cors
+    -nodemon
+    -dotenv
+    -slugify : create URL
+    -express-jwt 
+    -morgan : collect log from http
+    -uuid : generate text for slug
+    -fs : verify files
+    -crypto
+    -node-cron: create schedule time waork
+    -nodemailer
+    -speakeasy
+    -google-auth-library
+    -multer
+    -@google-cloud/storage
+    -path
+    -yaml
+    -swagger-jsdoc
+    -swagger-ui-express
