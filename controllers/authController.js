@@ -7,7 +7,6 @@ const { getUserGoogle } = require('../services/authSerivce');
 const { fileFilter } = require('../services/uploadService');
 const uploadImage = require('../services/cloudService');
 
-const x = "1234";
 
 exports.login = async(req,res) =>{
     const {userEmail,password} = req.body;
