@@ -16,7 +16,7 @@ exports.login = async(req,res) =>{
     }
     if(!validator.isEmail(userEmail)){
         if(!userEmail==='admin'){
-        return res.status(401).json({ message: 'Invalid Password or email' });
+            return res.status(401).json({ message: 'Invalid Password or email' });
         }
     }
     try{
@@ -30,22 +30,16 @@ exports.login = async(req,res) =>{
         }
         let userData = fetchData[0];
         let hashPassword = crypto.pbkdf2Sync(password,userData.salt,310000,32,'sha256');
-        // verify login password
         if(!crypto.timingSafeEqual(Buffer.from(userData.hashPassword,'hex'),hashPassword)){
             return res.status(401).json({ message: 'Invalid Password or email' });
         }
         const { userName, email, role, userImage } = userData;
-        //admin check
         if(userData.role ==='admin'){
             const token = await creatToken({userName,email,role,userImage});
-
             return res.status(200).json({message:"Admin welcome",token,role});
         }
-        //email check
-        
-        // create otp
         let otp = generateOTP(email);
-         await sendOTPviaEmail(email,otp);
+        await sendOTPviaEmail(email,otp);
         return res.status(200).json({message: "Pls verify otp"});
     }catch(error){
         return res.status(500).json({message:'Database not initialized'})
@@ -92,7 +86,7 @@ exports.googleLogin = async (req, res) => {
     }finally{
        await db.end();
     }
-};
+}
 
 exports.otpVerify = async(req,res) =>{
    const {otp,userName,userEmail,password} = req.body;
@@ -122,23 +116,21 @@ exports.otpVerify = async(req,res) =>{
                                 imageUrl,
                                 "Local"
                             ])
-
                             }catch(error){
-                                    return res.status(400).json({message:"Canot sign up new user"})   
+                                 return res.status(400).json({message:"Canot sign up new user"})   
                             } 
                     }catch(error){
-                            return res.status(500).json({message:'cannot connect Google Cloud to upload user avarta'})
+                        return res.status(500).json({message:'cannot connect Google Cloud to upload user avarta'})
                     }
-                        try{
-                            const [fetchData]  = await db.execute('SELECT * FROM users where email = ?',[userEmail]) 
-                            const userData = fetchData[0];
-                            const { userName, email, role, userImage } = userData;
-                            //create access token 
-                            const token = await creatToken({userName,email,role,userImage})
-                            return res.status(200).json({message:"Signup sucessfully",token})
-                        }catch(error){
-                            return res.status(400).json({message:'Signup otp error'})
-                        }
+                    try{
+                        const [fetchData]  = await db.execute('SELECT * FROM users where email = ?',[userEmail]) 
+                        const userData = fetchData[0];
+                        const { userName, email, role, userImage } = userData; 
+                        const token = await creatToken({userName,email,role,userImage})
+                        return res.status(200).json({message:"Signup sucessfully",token})
+                    }catch(error){
+                        return res.status(400).json({message:'Signup otp error'})
+                    }
             }else{
                 try{
                     const salt = crypto.randomBytes(16).toString('hex');
@@ -215,7 +207,7 @@ exports.signup = async (req,res) =>{
     }
     const db = await connectDatabase();
     try{
-        if (!db) {
+        if (!db){
             return res.status(500).json({ message: 'Database not initialized' });
         }
         try{
