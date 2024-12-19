@@ -1,26 +1,118 @@
 openapi: 3.0.0
 info:
-  title: Attraction API
-  description: Optional multiline or single-line description in [CommonMark](http://commonmark.org/help/) or HTML.
-  version: 0.1.9
+  title: TM-01_MERN-API
+  description: This is API for MERN Stack for action with Blog and User data, we use 3 database services MongoAtlas, TiDB, and GoogleCloud
+  version: 1.0.0
 
 servers:
-  - url: http://api.example.com/v1
-    description: Optional server description, e.g. Main (production) server
-  - url: http://staging-api.example.com
-    description: Optional server description, e.g. Internal staging server for testing
+  - url: http://localhost:5000
+    description: TM-01_MERN-API
+
+tags:
+  - name: Auth/User Profile
+    description: Get User Profile
+  - name: Auth/User Data By Token
+    description: Get User By Token
+  - name: Auth/Login 2FA
+    description: User Services
+  - name: Auth/Google Login
+    description: User Services
+  - name: Auth/Sign up
+    description: User Services
+  - name: Auth/Create Profile
+    description: User Services
+  - name: Auth/Edit Profile and User Data
+    description: User Services
 
 paths:
-  /users:
+  /api/auth/profile/{username}:
     get:
-      summary: Returns a list of users.
-      description: Optional extended description in CommonMark or HTML.
+      tags:
+        - Auth/User Profile
+      summary: Get a user profile by username
+      description: Fetches a user profile based on the provided username.
+      parameters:
+        - name: username
+          in: path
+          description: Profile's username
+          required: true
+          schema:
+            type: string
       responses:
-        "200": # status code
-          description: A JSON array of user names
+        '200':
+          description: Successful operation
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
+                $ref: '#/components/schemas/Profile'
+
+  /api/auth/getUser:
+    get:
+      tags:
+        - Auth/User Data By Token
+      summary: Get User Data for Logged-in User Using Provided Token
+      description:  Fetches the data of the logged-in user based on the provided Bearer token for authentication.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getUser'                
+ 
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT  
+  schemas:
+    Profile:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        firstName:
+          type: string
+          example: Phantom
+        lastName:
+          type: string
+          example: assassin
+        birthDate:
+          type: string
+          format: date
+          example: "1993-04-23"
+        address:
+          type: string
+          example: Adelaide, Australia
+        bio:
+          type: string
+          example: "Love me, love my cat"
+        userName:
+          type: string
+          example: Ptm1234
+        userImage:
+          type: string
+          format: uri
+          example: "https://example.com/images/johndoe.jpg"
+    UserProfile:
+      type: object
+      properties:
+        user:
+          type: object
+          properties:
+            userName:
+              type: string
+              example: "JohnDoe123"
+            userEmail:
+              type: string
+              example: "john.doe@example.com"
+            role:
+              type: string
+              example: "admin"
+            userImage:
+              type: string
+              example: "https://example.com/images/johndoe.jpg"
