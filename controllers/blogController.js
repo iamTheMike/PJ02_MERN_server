@@ -1,14 +1,12 @@
-// connect to Database and operate
 const slugify = require('slugify');
 const {blogModel} = require('../models/blogDatabaseModel');
 const {v4:uuidv4}= require('uuid');
 const { getAllUser, getUsernameByEmail } = require('./authController');
-//save data
+
 exports.create= async (req,res)=>{
-    const {title,content,userEmail} = req.body //destructure data
-    let slug = slugify(title); //ถ้า title เป็นภาษาไทย slug จะเป็นค่าว่าง
+    const {title,content,userEmail} = req.body
+    let slug = slugify(title);//for thai language
     if(!slug)slug = uuidv4();
-    
     if (!title) {
       return res.status(400).json({ message: "Title is required" });
     }
@@ -57,7 +55,7 @@ exports.getBlog = async (req,res)=>{
 
 exports.removeBlog = async (req,res)=>{
    try{
-      const{slug} = req.params //destructuring 
+      const{slug} = req.params 
       const result = await blogModel.findOneAndDelete({ slug });
       if (!result) {
          return res.status(404).json({ message: "Blog not found" });
@@ -70,17 +68,13 @@ exports.removeBlog = async (req,res)=>{
 
 exports.editBlog = async (req,res)=>{
    try{
-      const{slug} = req.params //destructuring 
-      try{
-         const data = await blogModel.findOne({slug});
-         if(data===null){
-            return res.status(400).json({message:"Blog not found"})
-         };
-      }catch(err){
-         return res.status(500).json({message:"Cannot fetch blog"});
-      }
+      const{slug} = req.params 
+      const data = await blogModel.findOne({slug});
+      if(data===null){
+         return res.status(400).json({message:"Blog not found"})
+      };
       const {title,content,author} = req.body
-      let newslug = slugify(title); //ถ้า title เป็นภาษาไทย slug จะเป็นค่าว่าง
+      let newslug = slugify(title); // if thai languge slug will be null
       if(!newslug)newslug = uuidv4();
       const result = await blogModel.findOneAndUpdate({ slug },{title,content,author,slug:newslug},{new:true});
       if (!result) {
@@ -92,4 +86,3 @@ exports.editBlog = async (req,res)=>{
       return  res.status(500).json({message:"Failed to update the blog"});
    }
 }
-//
