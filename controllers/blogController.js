@@ -23,8 +23,9 @@ exports.create= async (req,res)=>{
 
 exports.getAllblogs= async (req,res)=>{
    try{
+     const {page, limit } = req.query;
      const userData = await getAllUser() ;
-     const blogData = await blogModel.find();
+     const blogData = await blogModel.find().skip((page-1)*limit).limit(limit);
      const userBlog = blogData.map(blog=>{
        const user = userData.find(user=>  blog.userEmail===user.email)
        const newBlog =  {...blog._doc,userName:(user?(user.userName):null)}
