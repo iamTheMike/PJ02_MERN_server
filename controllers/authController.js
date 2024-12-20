@@ -33,9 +33,9 @@ exports.login = async(req,res) =>{
         if(!crypto.timingSafeEqual(Buffer.from(userData.hashPassword,'hex'),hashPassword)){
             return res.status(401).json({ message: 'Invalid Password or email' });
         }
-        const { userName, email, role, userImage } = userData;
+        const { id,userName, email, role, userImage } = userData;
         if(userData.role ==='admin'){
-            const token = await creatToken({userName,email,role,userImage});
+            const token = await creatToken({id,userName,email,role,userImage});
             return res.status(200).json({message:"Admin welcome",token,role});
         }
         let otp = generateOTP(email);
@@ -88,8 +88,8 @@ exports.googleLogin = async (req, res) => {
         }
         const [userData] = await db.execute(`SELECT * FROM users WHERE email = ?`,[email])
         const user = userData[0]
-        const {userName,role,userImage} = user;
-        const token = await creatToken({userName,email,role,userImage})
+        const {id,userName,role,userImage} = user;
+        const token = await creatToken({id,userName,email,role,userImage})
         return res.status(200).json({message:"login sucessfully",token})
     }catch (error) {
         return res.status(400).send('Invalid Code');
@@ -136,8 +136,8 @@ exports.otpVerify = async(req,res) =>{
                     try{
                         const [fetchData]  = await db.execute('SELECT * FROM users where email = ?',[userEmail]) 
                         const userData = fetchData[0];
-                        const { userName, email, role, userImage } = userData; 
-                        const token = await creatToken({userName,email,role,userImage})
+                        const {id, userName, email, role, userImage } = userData; 
+                        const token = await creatToken({id,userName,email,role,userImage})
                         return res.status(200).json({message:"Signup sucessfully",token})
                     }catch(error){
                         return res.status(500).json({message:'internal server error'})
@@ -161,9 +161,9 @@ exports.otpVerify = async(req,res) =>{
                 try{
                     const [fetchData]  = await db.execute('SELECT * FROM users where email = ?',[userEmail]) 
                     const userData = fetchData[0];
-                    const { userName, email, role, userImage } = userData;
+                    const { id,userName, email, role, userImage } = userData;
                     //create access token 
-                    const token = await creatToken({userName,email,role,userImage})
+                    const token = await creatToken({id,userName,email,role,userImage})
                     return res.status(200).json({message:"Signup sucessfully",token})
                 }catch(error){
                     return res.status(500).json({message:'internal server error'})
@@ -174,9 +174,9 @@ exports.otpVerify = async(req,res) =>{
             try{
                 const [fetchData]  = await db.execute('SELECT * FROM users where email = ?',[userEmail]) 
                 const userData = fetchData[0];
-                const { userName, email, role, userImage } = userData;
+                const { id,userName, email, role, userImage } = userData;
                 //create access token 
-                const token = await creatToken({userName,email,role,userImage})
+                const token = await creatToken({id,userName,email,role,userImage})
                 return res.status(200).json({message:"Successful login",token})
             }catch(error){
                 return res.status(500).json({message:"Not Found User"})
@@ -280,9 +280,13 @@ exports.getProfile = async(req,res) =>{
 }
 
 exports.creatAndUpdateProfile = async(req,res)=>{
+    console.log(req.body)
+    console.log(req.auth)
     const {userid,bio,userName,firstName,lastName,birthDate,address} = req.body
-    const checkUser = req.auth.userName
-    console.log(checkUser);
+    const checkId = req.auth.id
+    if(checkId!==parseInt(userid)){
+        return res.status(401).json({message:"You are not the owner of this profile."})
+    };
     let userImage;
     const db = await connectDatabase();
         try{
@@ -314,9 +318,9 @@ exports.creatAndUpdateProfile = async(req,res)=>{
                             [userName,userName,userImage,userImage,userid]
                             );
                             try{
-                                const [user] = await db.execute('SELECT userName,email,role,userImage FROM users WHERE id=?',[userid])
-                                const {userName,email,role,userImage} = user[0];
-                                const token = await creatToken({userName,email,role,userImage})
+                                const [user] = await db.execute('SELECT id,userName,email,role,userImage FROM users WHERE id=?',[userid])
+                                const {id,userName,email,role,userImage} = user[0];
+                                const token = await creatToken({id,userName,email,role,userImage})
                                 try{
                                     const [checkUserData] = await db.execute('SELECT * FROM userData WHERE userid = ?',[userid])
                                     if(checkUserData.length===0){
@@ -334,10 +338,11 @@ exports.creatAndUpdateProfile = async(req,res)=>{
                                                 return res.status(400).json({message:"userData not found"})
                                             }    
                                         }catch(error){
-                                            return res.status(400).json({message:"Record user data error"})
+                                            return res.status(400).json({message:"createNew Record user data error"})
                                         } 
                                     }else{
                                         try{
+                                           
                                             await db.execute(
                                                 `UPDATE userData 
                                                 SET
@@ -352,12 +357,12 @@ exports.creatAndUpdateProfile = async(req,res)=>{
                                             try{
                                                 const [fetchData] = await db.execute('SELECT * FROM userData WHERE userid = ?',[userid] )
                                                 const userData = fetchData[0];
-                                                return res.status(200).json({message:"Complete",userData,token})
+                                                return res.status(200).json({message:"Update Successfully",userData,token})
                                             }catch(error){
                                                 return res.status(400).json({message:"User Data Not Found"})
                                             }    
                                         }catch(error){
-                                            res.status(400).json({message:"Record user data error"})
+                                            res.status(400).json({message:" update Record user data error"})
                                         }   
                                     } 
                                 }catch(error){

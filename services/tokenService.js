@@ -34,6 +34,7 @@ const initialzeSecret = async (req, res) => {
 
 const creatToken = async (user) =>{
   const payload = {
+    id : user.id,
     userName : user.userName,
     userEmail: user.email,
     role: user.role,

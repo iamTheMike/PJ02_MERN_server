@@ -493,11 +493,51 @@ paths:
   /api/auth/create-profile:
     post:
       tags:
-        - Auth/Create or Update Profile
+        - Auth/Create or Update user's Profile and Data 
       summary:
       description:
+      security:
+        - BearerAuth: []
       requestBody:
         require: ture
+        content:
+          application/json:
+            schema:
+             type: object
+             properties:
+              userid: 
+                type: number
+                example: 1
+              userName:
+                type: string
+                example: "Devid1234"
+              firstName:
+                type: string
+                example: "Devid"
+              lastName:
+                type: string
+                example: "stevjob"
+              birthDate:
+                type: string
+                example: "22/08/1993"
+              address:
+                type: string
+                example: "Australia Adeliade transmer"      
+              bio:
+                type: string
+                example: "love me love my cat"
+              userImage:
+                type: buffer
+                format: binary
+                description: "Optional user image (upload image file)"
+      responses:
+        '200':
+          description: Successful login (Admin role)
+          content:
+            application/json:
+              schema:
+                 $ref: '#/components/schemas/ProfileUpdate' 
+
 
 
 components:
@@ -584,3 +624,25 @@ components:
         token:
           type: string
           example: "eyJhbGciOiJIUzI1NJshUksjCI6IkpXVCJ9.eyJ1c2VyTmFtZSI6IkFkbWlubWlrZSKmsJusp1JFbWFpbCI6ImFkbWluIiwicm9sZSI6ImFkbWluIiwidXNlckltYWdlIjoiaHR0cHM6Ly9zdG9yYWdlLmdvb2dsZWFwaXMuY29tL21lYXJuLWFwcC0wMS8xNzM0MzUzOTQwODAwU19fNDQ0ODY5MC5qcGciLCJpYXQiOjE3MzQ2MTc1MDYsImV4cCI6MTczNDYyMTEwNn0.ONC38HUB9vk5vuC0gkd-d4M27nTfApSItVaOAmn8QKI"
+    ProfileUpdate:
+      type: object
+      properties:
+        firstName:
+          type: string
+          example: Phantom
+        lastName:
+          type: string
+          example: assassin
+        birthDate:
+          type: string
+          format: date
+          example: "1993-04-23"
+        address:
+          type: string
+          example: Adelaide, Australia
+        bio:
+          type: string
+          example: "Love me, love my cat"
+        tokem:
+          type: string
+          example: "eyJhbGciOiJIUzI1NJshUksjCI6IkpXVCJ9.eyJ1c2VyTmFtZSI6IkFkbWlubWlrZSKmsJusp1JFbWFpbCI6ImFkbWluIiwicm9sZSI6ImFkbWluIiwidXNlckltYWdlIjoiaHR0cHM6Ly9zdG9yYWdlLmdvb2dsZWFwaXMuY29tL21lYXJuLWFwcC0wMS8xNzM0MzUzOTQwODAwU19fNDQ0ODY5MC5qcGciLCJpYXQiOjE3MzQ2MTc1MDYsImV4cCI6MTczNDYyMTEwNn0.ONC38HUB9vk5vuC0gkd-d4M27nTfApSItVaOAmn8QKI"  

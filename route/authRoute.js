@@ -38,7 +38,7 @@ router.post('/signup',(req,res,next)=>{
          next();
         })
 },signup);
-router.post('/creat-profile',(req,res,next)=>{
+router.post('/create-profile',(req,res,next)=>{
     verifyToken(req,res,err=>{
         if(err){
           return  handleTokenError(err,res,next)
