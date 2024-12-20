@@ -6,6 +6,7 @@ const { creatToken } = require('../services/tokenService');
 const { getUserGoogle, generateGoogleUrl } = require('../services/authSerivce');
 const { fileFilter } = require('../services/uploadService');
 const uploadImage = require('../services/cloudService');
+const { token } = require('morgan');
 
 
 exports.login = async(req,res) =>{
@@ -280,8 +281,6 @@ exports.getProfile = async(req,res) =>{
 }
 
 exports.creatAndUpdateProfile = async(req,res)=>{
-    console.log(req.body)
-    console.log(req.auth)
     const {userid,bio,userName,firstName,lastName,birthDate,address} = req.body
     const checkId = req.auth.id
     if(checkId!==parseInt(userid)){
@@ -292,7 +291,7 @@ exports.creatAndUpdateProfile = async(req,res)=>{
         try{
             const [checkUser] = await db.execute('SELECT userName FROM users ');
             if (checkUser[0].userName === userName){
-                return res.status(400).json({message:"username have been used already"})
+                return res.status(400).json({message:"Username have been used already"})
             }
              if (userName || req.file) {
                try{ 
@@ -333,12 +332,12 @@ exports.creatAndUpdateProfile = async(req,res)=>{
                                             
                                                 const [fetchData] = await db.execute('SELECT * FROM userData WHERE userid = ?',[userid] )
                                                 const userData = fetchData[0];
-                                                return res.status(200).json({message:"Record data successfully",userData,token})
+                                                return res.status(200).json({message:"Update Successfully",userData,token})
                                             }catch(error){
-                                                return res.status(400).json({message:"userData not found"})
+                                                return res.status(500).json({message:"Internal Server Error"})
                                             }    
                                         }catch(error){
-                                            return res.status(400).json({message:"createNew Record user data error"})
+                                            return res.status(500).json({message:"Internal Server Error"})
                                         } 
                                     }else{
                                         try{
@@ -359,22 +358,22 @@ exports.creatAndUpdateProfile = async(req,res)=>{
                                                 const userData = fetchData[0];
                                                 return res.status(200).json({message:"Update Successfully",userData,token})
                                             }catch(error){
-                                                return res.status(400).json({message:"User Data Not Found"})
+                                                return res.status(500).json({message:"Internal Server Error"})
                                             }    
                                         }catch(error){
-                                            res.status(400).json({message:" update Record user data error"})
+                                            return res.status(500).json({message:"Internal Server Error"})
                                         }   
                                     } 
                                 }catch(error){
-                                    return res.status(400).json({message:"cannot fetch userData"})
+                                    return res.status(500).json({message:"Internal Server Error"})
                                 }
                             }catch(error){       
                             }    
                         }catch(error){
-                            return res.status(400).json({message:"cannot update Username and image "})
+                            return res.status(500).json({message:"Internal Server Error"})
                         }
                 }catch(error){
-                    return res.status(400).json({message:"cannot upload Image"})
+                    return res.status(500).json({message:"Internal Server Error"})
                 }   
              }else{
                 try{
@@ -388,12 +387,12 @@ exports.creatAndUpdateProfile = async(req,res)=>{
                             try{
                                 const [fetchData] = await db.execute('SELECT * FROM userData WHERE userid = ?',[userid] )
                                 const userData = fetchData[0];
-                                return res.status(200).json({userData})
+                                return res.status(201).json({message:"User Data create Successfully",userData})
                             }catch(error){
-                                return res.status(400).json({message:"User Data Not Found"})
+                                return res.status(500).json({message:"Internal Server Error"})
                             }    
                         }catch(error){
-                            return res.status(400).json({message:"There is no user data"})
+                            return res.status(500).json({message:"Internal Server Error"})
                         } 
                     }else{
                         try{
@@ -413,18 +412,18 @@ exports.creatAndUpdateProfile = async(req,res)=>{
                                 const userData = fetchData[0];
                                 return res.status(200).json({userData})
                             }catch(error){
-                                return res.status(400).json({message:"User Data Not Found"})
+                                return res.status(500).json({message:"Internal Server Error"})
                             }    
                         }catch(error){
-                            res.status(400).json({message:"Update UserData error"})
+                            return res.status(500).json({message:"Internal Server Error"})
                         }   
                     } 
                 }catch(error){
-                    res.status(400).json({message:"cannot fetch userData"})
+                    return res.status(500).json({message:"Internal Server Error"})
                 }
              }    
         }catch(error){
-            res.status(400).json({message:"Database not initialized"})
+            return res.status(500).json({message:"Internal Server Error"})
         }finally{
             await db.end();
         }       

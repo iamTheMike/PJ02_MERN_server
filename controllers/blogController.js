@@ -17,7 +17,7 @@ exports.create= async (req,res)=>{
     const blog = await blogModel.create({title,content,userEmail,slug});
     return res.status(201).json({message:"create blog sucessfully ",blog}); 
    }catch(err){
-      return res.status(400).json({message:"Cannot duplicate title"})
+      return  res.status(500).json({message:"Internal Server Error"})
    }
 }
 
@@ -33,9 +33,9 @@ exports.getAllblogs= async (req,res)=>{
         ...newBlog  
        }
      })
-     res.json(userBlog);
+     return res.status(200).json(userBlog);
    }catch(error){
-     res.status(500).json({message:"Failed to fetch blog"});
+     return res.status(500).json({message:"Failed to fetch blog"});
    }
 }
 
@@ -48,9 +48,9 @@ exports.getBlog = async (req,res)=>{
       }
       const {userEmail,title,content,createdAt} = data;
       const userName = await getUsernameByEmail(userEmail)
-      res.json({userEmail,title,content,slug,userName,createdAt});
+      return res.status(200).json({userEmail,title,content,slug,userName,createdAt});
    }catch(error){
-     res.status(500).json({message:"Failed to fetch the blog"});
+     return res.status(500).json({message:"Failed to fetch the blog"});
    }
 }
 
