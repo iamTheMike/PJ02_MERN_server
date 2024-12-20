@@ -1,6 +1,5 @@
 const express = require('express');
-const { login, otpVerify ,getUserBytoken, resendOTP, googleLogin, signup, getProfile, creatAndUpdateProfile} = require('../controllers/authController');
-const { getUrlGoogleLogin } = require('../services/authSerivce');
+const { login, otpVerify ,getUserBytoken, resendOTP, googleLogin, signup, getProfile, creatAndUpdateProfile, getUrlGoogleLogin} = require('../controllers/authController');
 const { upload, handleMulterError } = require('../services/uploadService');
 const { verifyToken, handleTokenError } = require('../services/tokenService');
 

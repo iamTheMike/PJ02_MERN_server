@@ -4,7 +4,7 @@ const { OAuth2Client} = require('google-auth-library');
 
 
 
-const getUrlGoogleLogin = async (req,res) =>{
+const generateGoogleUrl= async (req,res) =>{
   const oAuth2Cleinet = new OAuth2Client(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
@@ -15,8 +15,7 @@ const getUrlGoogleLogin = async (req,res) =>{
     scope:['https://www.googleapis.com/auth/userinfo.profile','https://www.googleapis.com/auth/userinfo.email'],
     prompt: 'consent'
   })
- 
-  res.json({url:authorizeUrl});
+  return({url:authorizeUrl});
 }
 
 const getUserGoogle = async (code,req,res) => {
@@ -40,4 +39,4 @@ const getUserGoogle = async (code,req,res) => {
 
 
 
-module.exports ={ getUserGoogle,getUrlGoogleLogin};
+module.exports ={ generateGoogleUrl,getUserGoogle };

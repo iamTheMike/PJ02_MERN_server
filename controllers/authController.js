@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const {sendOTPviaEmail,verifyOTP,generateOTP} = require('../services/2faService')
 const validator = require('validator');
 const { creatToken } = require('../services/tokenService');
-const { getUserGoogle } = require('../services/authSerivce');
+const { getUserGoogle, generateGoogleUrl } = require('../services/authSerivce');
 const { fileFilter } = require('../services/uploadService');
 const uploadImage = require('../services/cloudService');
 
@@ -48,6 +48,16 @@ exports.login = async(req,res) =>{
     }
 }
 
+exports.getUrlGoogleLogin  = async (req,res)=>{
+    try{
+        const url = await generateGoogleUrl()
+        return res.status(200).json({...url});
+    }catch(error){
+        res.status(500).json({ error: 'Internal Server Error'})
+    }
+
+}
+
 exports.googleLogin = async (req, res) => { 
     const db = await connectDatabase();
     try{
@@ -55,7 +65,7 @@ exports.googleLogin = async (req, res) => {
         const googleData = await getUserGoogle(code);
         const {email,name,picture} = googleData; 
         if (!db) {
-            return res.status(500).json({ message: 'Database not initialized' });
+            return res.status(500).json({ message: 'Internal Server Error'});
         }
         const [fetchData] = await db.execute (`SELECT * FROM users where email = ?`,[email]);
         if(fetchData.length === 0){
@@ -73,7 +83,7 @@ exports.googleLogin = async (req, res) => {
                         'GoogleOauth'
                     ])
                 }catch(error){
-                    return res.status(500).json({message:"Error record new user"})
+                    return res.status(500).json({message:"Internal Server Error"})
                 }
         }
         const [userData] = await db.execute(`SELECT * FROM users WHERE email = ?`,[email])
@@ -82,7 +92,7 @@ exports.googleLogin = async (req, res) => {
         const token = await creatToken({userName,email,role,userImage})
         return res.status(200).json({message:"login sucessfully",token})
     }catch (error) {
-        return res.status(500).send('An error occurred during Google login');
+        return res.status(400).send('Invalid Code');
     }finally{
        await db.end();
     }
@@ -118,7 +128,7 @@ exports.otpVerify = async(req,res) =>{
                                 "Local"
                             ])
                             }catch(error){
-                                 return res.status(500).json({message:"internal server error"})   
+                                return res.status(404).json({message:'This user have not been member yet, Please signp'})  
                             } 
                     }catch(error){
                         return res.status(500).json({message:'internal server error'})
@@ -169,7 +179,7 @@ exports.otpVerify = async(req,res) =>{
                 const token = await creatToken({userName,email,role,userImage})
                 return res.status(200).json({message:"Successful login",token})
             }catch(error){
-                return res.status(500).json({message:"Internal Server Error"})
+                return res.status(500).json({message:"Not Found User"})
             }
         }
     }catch(error){
@@ -271,6 +281,8 @@ exports.getProfile = async(req,res) =>{
 
 exports.creatAndUpdateProfile = async(req,res)=>{
     const {userid,bio,userName,firstName,lastName,birthDate,address} = req.body
+    const checkUser = req.auth.userName
+    console.log(checkUser);
     let userImage;
     const db = await connectDatabase();
         try{

@@ -12,7 +12,7 @@ tags:
   - name: Auth/User Profile
     description: Get User Profile
   - name: Auth/User Data By JWT
-    description: Get User By  JWT
+    description: Get User By JWT
   - name: Auth/Login 2FA
     description: Log in to create a JWT for authentication.
                  - If the user is an Admin, only 1FA (email and password verification) is required.
@@ -24,15 +24,15 @@ tags:
                  1. Submit user data such as userEmail, userName, password, userImage(optional) to generate an OTP sent to the user's email.
                  2. Verify the OTP along with the email to login automatically 
   - name: Auth/Otp
-    desctiption: verrify OTP, There are two function
+    description: verrify OTP, There are two function
                  1. verifty after Login using OTP and useremail
                  2. verify after signup using OTP, useremail, username, password, and userImage(optional)
 
   - name: Auth/Google Login
-    description: User Services
-  - name: Auth/Create Profile
-    description: User Services
-  - name: Auth/Edit Profile and User Data
+    description: Log in with OAuth2 by Google to create a JWT for authentication.
+                 1. Log in with a Google Account using the provided response URL. Once the login is complete, Google will generate an auth code for the next step.
+                 2. Use the auth code to sign up new users and create a JWT. For existing users, just create a JWT.
+  - name: Auth/Create or Update Profile
     description: User Services
 
 paths:
@@ -103,7 +103,6 @@ paths:
                 type: object
                 example: "Invalid or expired token"      
 
-# login 
   /api/auth/login:
     post:
       tags:
@@ -177,8 +176,6 @@ paths:
                     type: object
                     example: "internal server error"
 
-
-# signup 
   /api/auth/signup:
       post:
         tags:
@@ -282,7 +279,7 @@ paths:
                   properties:
                     message:
                       type: object
-                      example: "This Username have been used"  
+                      example: "File size exceeds the limit of 4MB!"  
         '500':
           description: internal server error
           content:
@@ -294,7 +291,6 @@ paths:
                     type: object
                     example: "internal server error"
 
-# OTP 
   /api/auth/otp:
     post:
       tags:
@@ -303,8 +299,8 @@ paths:
       description: Verify the OTP along with the email to create the JWT for authentication.
       requestBody:
         description: verrify OTP, There are two function
-                      1. verifty after Login using OTP and useremail
-                      2. verify after signup using OTP, useremail, username, password, and userImage(optional)
+                      1. verifty after Login using {OTP, useremail}
+                      2. verify after signup using {OTP, useremail, username, password, userImage(optional)}
         required: true
         content:
           application/json:
@@ -370,7 +366,17 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: "Invalid OTP"                   
+                    example: "Invalid OTP"
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: object
+                    example: "This user have not been member yet, Please sign-up"                               
         '500':
           description: internal server error
           content:
@@ -420,7 +426,78 @@ paths:
                     message:
                       type: object
                       example: "internal server error"           
+  
+  /api/auth/googlelogin:
+    get:
+      tags: 
+        - Auth/Google Login
+      summary: step 1 Log in with a Google Account using the provided response URL.
+      description: Use the URL to log in with a Google Account. Once the login is complete, Google will generate an auth code for the next step.
+      responses: 
+        '200':
+          description: Successful create URL
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    example: "https://accounts.google.com/o/oauth2/v2/auth?access_type=offline&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email&prompt=consent&response_type=code&client_id=786355565528-nfs4ue6esqeheh1d2rsv3ko98nbc3h0t.apps.googleusercontent.com&redirect_uri=http%3A%2F%2Flocalhost%3A3500%2F2b71ec28dbfe27e1103fd9331458466b76f2dc84bf2a40b0569gjh94rf67b4e850e1f5da1"
+  /api/auth/callback:
+    post:
+      tags:
+        - Auth/Google Login
+      summary: Step 2 Retrieve the callback URL, extract the query parameter `code`, and decode it before use.
+      description: Use the auth code to sign up new users and create a JWT. For existing users, simply create a JWT.
+      requestBody:        
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  example: "4/0AanRRrsktx1GDjztWHSd8803JKsdExampleBDMo4nhdKiSBrdc_t9q5LJilDmLAy27Q"
+              required:
+                - code 
+      responses:
+        '200':  
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: object
+                    example: "Invalid code"                                               
+        '500':
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: object
+                    example: "internal server error"      
 
+  /api/auth/create-profile:
+    post:
+      tags:
+        - Auth/Create or Update Profile
+      summary:
+      description:
+      requestBody:
+        require: ture
 
 
 components:
@@ -494,7 +571,7 @@ components:
       properties:
         message:
           type: string  
-          example: "Successful login"
+          example: "Login sucessfully"
         token:
           type: string
           example: "eyJhbGciOiJIUzI1NJshUksjCI6IkpXVCJ9.eyJ1c2VyTmFtZSI6IkFkbWlubWlrZSKmsJusp1JFbWFpbCI6ImFkbWluIiwicm9sZSI6ImFkbWluIiwidXNlckltYWdlIjoiaHR0cHM6Ly9zdG9yYWdlLmdvb2dsZWFwaXMuY29tL21lYXJuLWFwcC0wMS8xNzM0MzUzOTQwODAwU19fNDQ0ODY5MC5qcGciLCJpYXQiOjE3MzQ2MTc1MDYsImV4cCI6MTczNDYyMTEwNn0.ONC38HUB9vk5vuC0gkd-d4M27nTfApSItVaOAmn8QKI"
