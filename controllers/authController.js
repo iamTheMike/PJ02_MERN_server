@@ -254,7 +254,7 @@ exports.getProfile = async(req,res) =>{
     try{
         const [fetchUser] = await db.execute(`SELECT id,userName,userImage FROM users WHERE userName = ?`,[username])
         if(fetchUser.length===0){
-            return res.status(404).json({message:"user not found"})
+            return res.status(404).json({message:"User not found"})
         }
         const user = fetchUser[0];
         const {id,userName,userImage} = user;
@@ -269,7 +269,7 @@ exports.getProfile = async(req,res) =>{
             }
             const userData = fetchuserData[0];
             const {firstName,lastName,birthDate,address,bio} = userData
-            return res.status(200).json({id,firstName,lastName,birthDate,address,bio,userName,userImage});
+            return res.status(201).json({id,firstName,lastName,birthDate,address,bio,userName,userImage});
         }catch(error){;
             return res.status(500).json({ message: "Internal server error" });
         }

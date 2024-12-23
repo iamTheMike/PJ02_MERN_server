@@ -19,8 +19,8 @@ const connectDatabase = async () =>{
 const initializeAuthDatabase = async () => {
     try{
         const db = await connectDatabase();
-       await db.execute(`CREATE DATABASE IF NOT EXISTS test`);
-       await db.changeUser( {database: "test"});
+       await db.execute(`CREATE DATABASE IF NOT EXISTS MERN01`);
+       await db.changeUser( {database: "MERN01"});
        
        //create initalizeTable
        const usersTable = 

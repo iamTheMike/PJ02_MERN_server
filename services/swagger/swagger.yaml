@@ -66,6 +66,12 @@ paths:
             application/json:
               schema:
                  $ref: '#/components/schemas/UserProfileandData'
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                 $ref: '#/components/schemas/UserProfile2'         
         '404':
           description: User not found
           content:
@@ -967,7 +973,19 @@ components:
           example: Adelaide, Australia
         bio:
           type: string
-          example: "Love me, love my cat"  
+          example: "Love me, love my cat"
+    UserProfile2:
+      type: object
+      properties:
+        id:
+          type: number
+          example: 1
+        userName:
+          type: string           
+          example: "JohnDoe123"            
+        UserImage:
+          type: string
+          example: "https://example.com/images/johndoe.jpg"        
     UserData:
       type: object
       properties:
