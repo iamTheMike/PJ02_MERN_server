@@ -26,7 +26,7 @@ It is a RESTful API built with Node.js, Express, and other essential libraries. 
 
 ## Installation
 ```
-git clone https://github.com/mohamedsamara/mern-ecommerce.git
+git clone https://github.com/iamTheMike/PJ01_MERN_server.git
 cd project
 npm install
 ```
