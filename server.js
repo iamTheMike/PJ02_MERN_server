@@ -26,7 +26,7 @@ app.use('/api/blog',blogRoute);
 app.use('/api/auth',authRoute);
 app.use('/api-doc',swaggerUi.serve, swaggerUi.setup(swaggerDocument))
 
-const port = process.env.PORT || 5000 ;
+const port = process.env.PORT  ;
 app.listen( port, async ()=>{
     console.log(`start server on port ${port}`);
    await initializeBlogDatabase();
