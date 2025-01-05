@@ -31,5 +31,5 @@ app.listen( port, async ()=>{
     console.log(`start server on port ${port}`);
    await initializeBlogDatabase();
    await initializeAuthDatabase();
-   await secretWork();
+//    await secretWork();
 })
