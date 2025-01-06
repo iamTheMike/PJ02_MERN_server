@@ -3,7 +3,8 @@ const path = require('path');
 
 const {Storage} = Cloud;
 const storage = new Storage({
-    keyFilename: path.join(__dirname, '..', 'cloudkey.json')
+    // keyFilename: path.join(__dirname, '..', 'cloudkey.json')
+    credentials: JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS)
 })
 const bucket = storage.bucket('mearn-app-01');
 
