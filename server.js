@@ -4,7 +4,6 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const blogRoute = require('./route/blogRoute')
 const authRoute = require('./route/authRoute')
-const { secretWork} = require('./services/tokenService')
 const {initializeBlogDatabase} = require('./models/blogDatabaseModel')
 const {initializeAuthDatabase} = require('./models/authDatabaseModel');
 const { swaggerDocument, swaggerUi } = require('./services/swagger/swagger');
