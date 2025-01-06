@@ -37,8 +37,7 @@ npm start
 ```
 
 ### Demo FULL STACK (MERN) (PJ01-MERN-Client + PJ01-MERN-Server[This Respository])
- * PJ01-MERN-Server: Deploy On..
- * PJ01-MERN-Client : Deploy On..
+https://pj02-mern-client.onrender.com/home
 
 
 
