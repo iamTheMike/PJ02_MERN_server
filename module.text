@@ -5,20 +5,20 @@ server
     -mysql2
     -jsonwebtoken
     -cors
-    -nodemon
+    -nodemon (dev)
     -dotenv
     -slugify : create URL
     -express-jwt 
-    -morgan : collect log from http
+    -morgan : collect log from http (dev)
     -uuid : generate text for slug
     -fs : verify files
     -crypto
     -node-cron: create schedule time waork
     -nodemailer
-    -speakeasy
+    -speakeasy : create OTP
     -google-auth-library
     -multer
-    -@google-cloud/storage
+    -@google-cloud/storage 
     -path
     -yaml
     -swagger-jsdoc
