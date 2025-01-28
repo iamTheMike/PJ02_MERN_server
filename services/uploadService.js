@@ -13,7 +13,7 @@ const fileFilter = (file) => {
     }
 }
 const handleMulterError = (err, res, next) => {
-    if (err instanceof multer.MulterError) {
+    if (err ) {
         if (err.code === 'LIMIT_FILE_SIZE') {
             return res.status(400).json({ message: 'File size exceeds the limit of 4MB!' });
         }
