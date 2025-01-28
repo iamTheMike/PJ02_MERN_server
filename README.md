@@ -16,6 +16,7 @@ It is a RESTful API built with Node.js, Express, and other essential libraries. 
  * MongoDB Cloud : Mongoose schemas is used for modeling  Blog data
  * TiDB : mysql2 is used for modeling user data
  * Google Cloud : Used for handling user image files.
+ * Google API Oauth2 
  
 ### Database Seed
  * MySql will create database named MERN01 with a users table including an admin role
